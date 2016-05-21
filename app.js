@@ -16,28 +16,47 @@ var image = Titanium.UI.createImageView({
 	top: -50
 });
 
-var tableData;
+var table = Ti.UI.createTableView();
+var tableData = [];
+var json, line1, city, state, zip, appfile_id, id, body;
 
 // Parse our JSON file using onload
-var url = "https://raw.githubusercontent.com/JordanAshton/JSONExampleFile/master/JSONtwitterOutput.json";
-var json;
+var url = "https://raw.githubusercontent.com/JordanAshton/JSONExampleFile/master/JSONtwitterOutput.txt";
 var xhr = Ti.Network.createHTTPClient({
 	onload: function() {
 		json = JSON.parse(this.responseText);
-		tableData = json;
-	}
+		for (var i = 0; i < json.things.length; i++){
+			var row = Ti.UI.createTableViewRow({
+				className: 'row',
+				objectName: 'row',
+				rowID: i,
+				height: 100,
+				borderColor: accentColor,
+				borderWidth: 1,
+				borderRadius: 5,
+				backgroundImage:'../images/opbg.png',
+				filter:json.data[i].line1 + "\n" + json.data[i].city + "," + json.data[i].state + " " + json.data[i].zip,
+				appfile_id: json.data[i].appfile_id,
+				message_id: json.data[i].id,
+				messagebody: json.data[i].body
+			});
+			tableData.push(row);
+		}
+		table.setData(tableData);
+	},
+	
+	onerror: function(e) {
+		Ti.API.debug("STATUS: " + this.status);
+		Ti.API.debug("TEXT: " + this.responseText);
+		Ti.API.debug("ERROR: " + e.error);
+		alert('There was an error retrieving the remote data. Try again.');
+	},
+	timeout:50000
 });
 
 xhr.open("GET", url);
 xhr.send();
 
-// Create the table and insert the JSON data
-var table = Titanium.UI.createTableView({
-	data: tableData,
-    top: 256,
-    left: 232
-});
-		
 // Add the image to the window and open the window
 win1.add(image);
 win1.add(table);
